@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout - Fashion Mart{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 style="margin-bottom: 2rem;">Checkout</h1>
+    
+    <div id="checkoutContainer" style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+        <div>
+            <div class="card" style="padding: 2rem; margin-bottom: 2rem;">
+                <h2 style="margin-bottom: 1rem;">Order Items</h2>
+                <div id="orderItems"></div>
+            </div>
+        </div>
+        
+        <div>
+            <div class="order-summary">
+                <h2 style="margin-bottom: 1.5rem;">Order Summary</h2>
+                <div id="orderSummary"></div>
+                <button onclick="placeOrder()" class="btn" style="width: 100%; margin-top: 1rem;">
+                    Place Order
+                </button>
+                <a href="{{ url_for('cart') }}" class="btn btn-secondary" 
+                   style="width: 100%; text-align: center; margin-top: 0.5rem; display: block; text-decoration: none;">
+                    Back to Cart
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let cart = {};
+
+document.addEventListener('DOMContentLoaded', loadCheckout);
+
+function loadCheckout() {
+    fetch('/api/cart/get')
+        .then(response => response.json())
+        .then(data => {
+            cart = data;
+            
+            if (Object.keys(cart).length === 0) {
+                window.location.href = '{{ url_for("products") }}';
+                return;
+            }
+            
+            renderCheckout();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to load checkout');
+        });
+}
+
+function renderCheckout() {
+    let total = 0;
+    let itemsHtml = '';
+    
+    for (const [productId, item] of Object.entries(cart)) {
+        const subtotal = item.price * item.quantity;
+        total += subtotal;
+        
+        itemsHtml += `
+            <div style="display: flex; gap: 1rem; padding: 1rem; border-bottom: 1px solid #ddd;">
+                <img src="${item.image}" alt="${item.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px;">
+                <div style="flex: 1;">
+                    <strong>${item.name}</strong>
+                    <div style="color: #666; margin-top: 0.25rem;">
+                        ৳${item.price.toFixed(2)} × ${item.quantity}
+                    </div>
+                </div>
+                <div style="font-weight: bold;">
+                    ৳${subtotal.toFixed(2)}
+                </div>
+            </div>
+        `;
+    }
+    
+    document.getElementById('orderItems').innerHTML = itemsHtml;
+    
+    document.getElementById('orderSummary').innerHTML = `
+        <div class="summary-row">
+            <span>Items:</span>
+            <span>${Object.keys(cart).length}</span>
+        </div>
+        <div class="summary-row">
+            <span>Subtotal:</span>
+            <span>৳${total.toFixed(2)}</span>
+        </div>
+        <div class="summary-row">
+            <span>Delivery:</span>
+            <span>FREE</span>
+        </div>
+        <div class="summary-row total">
+            <span>Total:</span>
+            <span>৳${total.toFixed(2)}</span>
+        </div>
+    `;
+}
+
+function placeOrder() {
+    if (!confirm('Confirm order placement?')) {
+        return;
+    }
+    
+    const btn = event.target;
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+    
+    fetch('/api/order/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Redirect to order confirmation page
+            window.location.href = '/order/confirmation/' + data.order_id;
+        } else {
+            alert(data.error || 'Failed to place order');
+            btn.disabled = false;
+            btn.textContent = 'Place Order';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred');
+        btn.disabled = false;
+        btn.textContent = 'Place Order';
+    });
+}
+</script>
+{% endblock %}
