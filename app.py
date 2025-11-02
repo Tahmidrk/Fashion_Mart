@@ -527,6 +527,140 @@ def order_detail(order_id):
         return jsonify({'error': str(e)}), 500
 
 # =====================================================
+# REVIEW AND RATING ROUTES
+# =====================================================
+
+@app.route('/api/review/add', methods=['POST'])
+def add_review():
+    """Add a new review for a product"""
+    try:
+        if 'customer_id' not in session:
+            return jsonify({'error': 'Please login to submit a review'}), 401
+        
+        data = request.get_json()
+        product_id = data.get('product_id')
+        rating = data.get('rating')
+        comment = data.get('comment', '').strip()
+        
+        # Validate input
+        if not product_id or not rating:
+            return jsonify({'error': 'Product ID and rating are required'}), 400
+        
+        if not (1 <= int(rating) <= 5):
+            return jsonify({'error': 'Rating must be between 1 and 5'}), 400
+        
+        customer_id = session['customer_id']
+        
+        db = get_db()
+        cursor = db.cursor()
+        
+        # Check if product exists
+        cursor.execute("SELECT ProductID FROM Product WHERE ProductID = %s", (product_id,))
+        if not cursor.fetchone():
+            return jsonify({'error': 'Product not found'}), 404
+        
+        # Check if customer already reviewed this product
+        cursor.execute("""
+            SELECT ReviewID FROM Review 
+            WHERE CustomerID = %s AND ProductID = %s
+        """, (customer_id, product_id))
+        
+        if cursor.fetchone():
+            return jsonify({'error': 'You have already reviewed this product'}), 400
+        
+        # Insert review
+        cursor.execute("""
+            INSERT INTO Review (CustomerID, ProductID, Rating, Comment, ReviewDate)
+            VALUES (%s, %s, %s, %s, NOW())
+        """, (customer_id, product_id, rating, comment))
+        
+        db.commit()
+        review_id = cursor.lastrowid
+        
+        # Get the review with customer name
+        cursor.execute("""
+            SELECT r.ReviewID, r.Rating, r.Comment, r.ReviewDate,
+                   c.FirstName, c.LastName
+            FROM Review r
+            JOIN Customer c ON r.CustomerID = c.CustomerID
+            WHERE r.ReviewID = %s
+        """, (review_id,))
+        
+        review = cursor.fetchone()
+        cursor.close()
+        db.close()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Review submitted successfully',
+            'review': {
+                'review_id': review[0],
+                'rating': review[1],
+                'comment': review[2],
+                'review_date': review[3].strftime('%Y-%m-%d %H:%M:%S'),
+                'customer_name': f"{review[4]} {review[5]}"
+            }
+        }), 201
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/reviews/<int:product_id>', methods=['GET'])
+def get_reviews(product_id):
+    """Get all reviews for a product"""
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        
+        # Get all reviews for the product
+        cursor.execute("""
+            SELECT r.ReviewID, r.Rating, r.Comment, r.ReviewDate,
+                   c.FirstName, c.LastName, c.CustomerID
+            FROM Review r
+            JOIN Customer c ON r.CustomerID = c.CustomerID
+            WHERE r.ProductID = %s
+            ORDER BY r.ReviewDate DESC
+        """, (product_id,))
+        
+        reviews_data = cursor.fetchall()
+        
+        # Get average rating and count
+        cursor.execute("""
+            SELECT AVG(Rating) as avg_rating, COUNT(*) as review_count
+            FROM Review
+            WHERE ProductID = %s
+        """, (product_id,))
+        
+        stats = cursor.fetchone()
+        avg_rating = float(stats[0]) if stats[0] else 0
+        review_count = stats[1]
+        
+        cursor.close()
+        db.close()
+        
+        reviews = []
+        for review in reviews_data:
+            reviews.append({
+                'review_id': review[0],
+                'rating': review[1],
+                'comment': review[2],
+                'review_date': review[3].strftime('%B %d, %Y at %I:%M %p'),
+                'customer_name': f"{review[4]} {review[5]}",
+                'customer_id': review[6],
+                'is_mine': 'customer_id' in session and session['customer_id'] == review[6]
+            })
+        
+        return jsonify({
+            'success': True,
+            'reviews': reviews,
+            'avg_rating': round(avg_rating, 1),
+            'review_count': review_count
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# =====================================================
 # RUN APPLICATION
 # =====================================================
 
