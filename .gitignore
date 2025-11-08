@@ -41,6 +41,11 @@ Thumbs.db
 *.sqlite
 *.sqlite3
 
+# Database backups (keep backups local, don't push to Git)
+database/backups/
+*.sql.backup
+*_backup_*.sql
+
 # Logs
 *.log
 *.log.*

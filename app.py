@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash
 from flask_cors import CORS
 import MySQLdb
 from datetime import datetime
@@ -327,7 +327,15 @@ def checkout():
     if not cart:
         return redirect(url_for('products'))
     
-    return render_template('checkout.html')
+    # Get customer details
+    db = get_db()
+    cursor = db.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("SELECT * FROM Customer WHERE CustomerID = %s", (session['customer_id'],))
+    current_user = cursor.fetchone()
+    cursor.close()
+    db.close()
+    
+    return render_template('checkout.html', current_user=current_user)
 
 @app.route('/api/order/create', methods=['POST'])
 def create_order():
@@ -340,18 +348,31 @@ def create_order():
         return jsonify({'error': 'Cart is empty'}), 400
     
     try:
+        # Get payment method from request
+        data = request.get_json() or {}
+        payment_method = data.get('payment_method', 'Cash on Delivery')
+        
         db = get_db()
         cursor = db.cursor()
+        
+        # Get customer address
+        cursor.execute("""
+            SELECT Road, Area, City, District, Number 
+            FROM Customer 
+            WHERE CustomerID = %s
+        """, (session['customer_id'],))
+        customer = cursor.fetchone()
+        delivery_address = f"{customer[0]}, {customer[1]}, {customer[2]}, {customer[3]}. Phone: {customer[4]}"
         
         # Calculate total amount
         cart_items = list(cart.values())
         total_amount = sum(float(item['price']) * int(item['quantity']) for item in cart_items)
         
-        # Create order
+        # Create order with payment method and delivery address
         cursor.execute("""
-            INSERT INTO `Order` (CustomerID, TotalAmount, OrderStatus)
-            VALUES (%s, %s, 'Pending')
-        """, (session['customer_id'], total_amount))
+            INSERT INTO `Order` (CustomerID, TotalAmount, OrderStatus, PaymentMethod, PaymentStatus, DeliveryAddress)
+            VALUES (%s, %s, 'Pending', %s, 'Pending', %s)
+        """, (session['customer_id'], total_amount, payment_method, delivery_address))
         
         order_id = cursor.lastrowid
         
@@ -657,6 +678,639 @@ def get_reviews(product_id):
             'review_count': review_count
         }), 200
         
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# =====================================================
+# DELIVERY MAN ROUTES
+# =====================================================
+
+@app.route('/delivery/login', methods=['GET', 'POST'])
+def delivery_login():
+    """Delivery man login"""
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        if not username or not password:
+            flash('Please enter both username and password', 'error')
+            return render_template('delivery_login.html')
+        
+        try:
+            db = get_db()
+            cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            
+            cursor.execute("""
+                SELECT * FROM DeliveryMan 
+                WHERE Username = %s AND Password = %s AND Status = 'Active'
+            """, (username, password))
+            
+            delivery_man = cursor.fetchone()
+            cursor.close()
+            db.close()
+            
+            if delivery_man:
+                session['delivery_man_id'] = delivery_man['DeliveryManID']
+                session['delivery_man_name'] = delivery_man['Name']
+                session['user_type'] = 'delivery'
+                session.modified = True
+                
+                flash('Login successful!', 'success')
+                return redirect(url_for('delivery_dashboard'))
+            else:
+                flash('Invalid credentials or inactive account', 'error')
+        except Exception as e:
+            flash(f'Error: {str(e)}', 'error')
+    
+    return render_template('delivery_login.html')
+
+@app.route('/delivery/logout')
+def delivery_logout():
+    """Delivery man logout"""
+    session.pop('delivery_man_id', None)
+    session.pop('delivery_man_name', None)
+    session.pop('user_type', None)
+    session.modified = True
+    flash('Logged out successfully', 'success')
+    return redirect(url_for('delivery_login'))
+
+@app.route('/delivery/dashboard')
+def delivery_dashboard():
+    """Delivery man dashboard showing assigned orders"""
+    if 'delivery_man_id' not in session:
+        return redirect(url_for('delivery_login'))
+    
+    try:
+        db = get_db()
+        cursor = db.cursor(MySQLdb.cursors.DictCursor)
+        
+        # Get assigned orders
+        cursor.execute("""
+            SELECT o.*, c.Name, c.Number, c.Road, c.Area, c.City, c.District
+            FROM `Order` o
+            JOIN Customer c ON o.CustomerID = c.CustomerID
+            WHERE o.DeliveryManID = %s
+            ORDER BY o.OrderDate DESC
+        """, (session['delivery_man_id'],))
+        
+        orders = list(cursor.fetchall())
+        
+        # Get order items for each order
+        for order in orders:
+            cursor.execute("""
+                SELECT oi.*, p.ProductName, p.ImageURL
+                FROM OrderItem oi
+                JOIN Product p ON oi.ProductID = p.ProductID
+                WHERE oi.OrderID = %s
+            """, (order['OrderID'],))
+            order['order_items'] = list(cursor.fetchall())
+        
+        cursor.close()
+        db.close()
+        
+        return render_template('delivery_dashboard.html', orders=orders)
+    except Exception as e:
+        flash(f'Error: {str(e)}', 'error')
+        return redirect(url_for('delivery_login'))
+
+@app.route('/delivery/api/update-payment-status', methods=['POST'])
+def update_payment_status():
+    """Update payment status when delivery man receives cash"""
+    if 'delivery_man_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    data = request.get_json()
+    order_id = data.get('order_id')
+    payment_status = data.get('payment_status')
+    
+    if not order_id or not payment_status:
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        
+        # Verify order is assigned to this delivery man
+        cursor.execute("""
+            SELECT DeliveryManID, OrderStatus FROM `Order` WHERE OrderID = %s
+        """, (order_id,))
+        
+        result = cursor.fetchone()
+        if not result or result[0] != session['delivery_man_id']:
+            return jsonify({'error': 'Unauthorized'}), 403
+        
+        current_order_status = result[1]
+        
+        # Update payment status
+        cursor.execute("""
+            UPDATE `Order` 
+            SET PaymentStatus = %s
+            WHERE OrderID = %s
+        """, (payment_status, order_id))
+        
+        # If order is delivered AND payment is now paid/received, mark as Complete
+        if current_order_status == 'Delivered' and payment_status == 'Paid':
+            cursor.execute("""
+                UPDATE `Order` 
+                SET OrderStatus = 'Complete'
+                WHERE OrderID = %s
+            """, (order_id,))
+        
+        db.commit()
+        cursor.close()
+        db.close()
+        
+        return jsonify({'success': True, 'message': 'Payment status updated'})
+    except Exception as e:
+        if db:
+            db.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/delivery/api/update-order-status', methods=['POST'])
+@app.route('/delivery/api/update-order-status', methods=['POST'])
+def update_order_status():
+    """Update order delivery status"""
+    if 'delivery_man_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    data = request.get_json()
+    order_id = data.get('order_id')
+    order_status = data.get('order_status')
+    
+    if not order_id or not order_status:
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        
+        # Verify order is assigned to this delivery man and get payment info
+        cursor.execute("""
+            SELECT DeliveryManID, PaymentStatus, PaymentMethod 
+            FROM `Order` 
+            WHERE OrderID = %s
+        """, (order_id,))
+        
+        result = cursor.fetchone()
+        if not result or result[0] != session['delivery_man_id']:
+            return jsonify({'error': 'Unauthorized'}), 403
+        
+        payment_status = result[1]
+        payment_method = result[2]
+        
+        # Update order status
+        cursor.execute("""
+            UPDATE `Order` 
+            SET OrderStatus = %s
+            WHERE OrderID = %s
+        """, (order_status, order_id))
+        
+        # If marked as Delivered AND payment is already Paid (or Online Payment), mark as Complete
+        # For Cash on Delivery, wait for payment confirmation
+        if order_status == 'Delivered':
+            if payment_status == 'Paid' or payment_method in ['Online Payment', 'Bank Transfer']:
+                cursor.execute("""
+                    UPDATE `Order` 
+                    SET OrderStatus = 'Complete'
+                    WHERE OrderID = %s
+                """, (order_id,))
+        
+        # Also update delivery table
+        cursor.execute("""
+            UPDATE Delivery 
+            SET DeliveryStatus = %s,
+                DeliveryDate = CASE WHEN %s IN ('Delivered', 'Complete') THEN CURDATE() ELSE DeliveryDate END
+            WHERE OrderID = %s
+        """, (order_status, order_status, order_id))
+        
+        db.commit()
+        cursor.close()
+        db.close()
+        
+        return jsonify({'success': True, 'message': 'Order status updated'})
+    except Exception as e:
+        if db:
+            db.rollback()
+        return jsonify({'error': str(e)}), 500
+
+# =====================================================
+# ADMIN ROUTES
+# =====================================================
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    """Admin login"""
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        if not username or not password:
+            flash('Please enter both username and password', 'error')
+            return render_template('admin_login.html')
+        
+        try:
+            db = get_db()
+            cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            
+            cursor.execute("""
+                SELECT * FROM Admin 
+                WHERE Username = %s AND Password = %s
+            """, (username, password))
+            
+            admin = cursor.fetchone()
+            cursor.close()
+            db.close()
+            
+            if admin:
+                session['admin_id'] = admin['AdminID']
+                session['admin_name'] = admin['Name']
+                session['admin_role'] = admin['Role']
+                session['user_type'] = 'admin'
+                session.modified = True
+                
+                flash('Login successful!', 'success')
+                return redirect(url_for('admin_dashboard'))
+            else:
+                flash('Invalid credentials', 'error')
+        except Exception as e:
+            flash(f'Error: {str(e)}', 'error')
+    
+    return render_template('admin_login.html')
+
+@app.route('/admin/logout')
+def admin_logout():
+    """Admin logout"""
+    session.pop('admin_id', None)
+    session.pop('admin_name', None)
+    session.pop('admin_role', None)
+    session.pop('user_type', None)
+    session.modified = True
+    flash('Logged out successfully', 'success')
+    return redirect(url_for('admin_login'))
+
+@app.route('/admin/dashboard')
+def admin_dashboard():
+    """Main admin dashboard"""
+    if 'admin_id' not in session:
+        return redirect(url_for('admin_login'))
+    
+    try:
+        db = get_db()
+        cursor = db.cursor(MySQLdb.cursors.DictCursor)
+        
+        # Get statistics
+        cursor.execute("SELECT COUNT(*) as total FROM Customer")
+        total_customers = cursor.fetchone()['total']
+        
+        cursor.execute("SELECT COUNT(*) as total FROM Product")
+        total_products = cursor.fetchone()['total']
+        
+        cursor.execute("SELECT COUNT(*) as total FROM `Order`")
+        total_orders = cursor.fetchone()['total']
+        
+        cursor.execute("SELECT COUNT(*) as total FROM DeliveryMan WHERE Status = 'Active'")
+        total_delivery = cursor.fetchone()['total']
+        
+        cursor.execute("SELECT SUM(TotalAmount) as revenue FROM `Order` WHERE OrderStatus = 'Complete'")
+        total_revenue = cursor.fetchone()['revenue'] or 0
+        
+        # Get recent orders
+        cursor.execute("""
+            SELECT o.*, c.Name as CustomerName 
+            FROM `Order` o
+            JOIN Customer c ON o.CustomerID = c.CustomerID
+            ORDER BY o.OrderDate DESC
+            LIMIT 5
+        """)
+        recent_orders = list(cursor.fetchall())
+        
+        cursor.close()
+        db.close()
+        
+        stats = {
+            'customers': total_customers,
+            'products': total_products,
+            'orders': total_orders,
+            'delivery_men': total_delivery,
+            'revenue': float(total_revenue)
+        }
+        
+        return render_template('admin_dashboard.html', stats=stats, recent_orders=recent_orders)
+    except Exception as e:
+        flash(f'Error: {str(e)}', 'error')
+        return redirect(url_for('admin_login'))
+
+@app.route('/admin/orders')
+def admin_orders():
+    """Admin page to view and assign orders"""
+    if 'admin_id' not in session:
+        return redirect(url_for('admin_login'))
+    
+    try:
+        db = get_db()
+        cursor = db.cursor(MySQLdb.cursors.DictCursor)
+        
+        # Get all orders with customer and delivery man info
+        cursor.execute("""
+            SELECT o.*, c.Name as CustomerName, c.Number, d.Name as DeliveryManName
+            FROM `Order` o
+            JOIN Customer c ON o.CustomerID = c.CustomerID
+            LEFT JOIN DeliveryMan d ON o.DeliveryManID = d.DeliveryManID
+            ORDER BY o.OrderDate DESC
+        """)
+        
+        orders = list(cursor.fetchall())
+        
+        # Get all active delivery men
+        cursor.execute("""
+            SELECT DeliveryManID, Name, Phone, VehicleType 
+            FROM DeliveryMan 
+            WHERE Status = 'Active'
+            ORDER BY Name
+        """)
+        
+        delivery_men = list(cursor.fetchall())
+        
+        cursor.close()
+        db.close()
+        
+        return render_template('admin_orders.html', orders=orders, delivery_men=delivery_men)
+    except Exception as e:
+        return f"Error: {str(e)}", 500
+
+@app.route('/admin/customers')
+def admin_customers():
+    """Admin page to manage customers"""
+    if 'admin_id' not in session:
+        return redirect(url_for('admin_login'))
+    
+    try:
+        db = get_db()
+        cursor = db.cursor(MySQLdb.cursors.DictCursor)
+        
+        cursor.execute("""
+            SELECT c.*, 
+                   COUNT(DISTINCT o.OrderID) as TotalOrders,
+                   COALESCE(SUM(o.TotalAmount), 0) as TotalSpent
+            FROM Customer c
+            LEFT JOIN `Order` o ON c.CustomerID = o.CustomerID
+            GROUP BY c.CustomerID
+            ORDER BY c.CreatedAt DESC
+        """)
+        
+        customers = list(cursor.fetchall())
+        
+        cursor.close()
+        db.close()
+        
+        return render_template('admin_customers.html', customers=customers)
+    except Exception as e:
+        return f"Error: {str(e)}", 500
+
+@app.route('/admin/products')
+def admin_products():
+    """Admin page to manage products"""
+    if 'admin_id' not in session:
+        return redirect(url_for('admin_login'))
+    
+    try:
+        db = get_db()
+        cursor = db.cursor(MySQLdb.cursors.DictCursor)
+        
+        cursor.execute("SELECT * FROM Product ORDER BY ProductName")
+        products = list(cursor.fetchall())
+        
+        cursor.close()
+        db.close()
+        
+        return render_template('admin_products.html', products=products)
+    except Exception as e:
+        return f"Error: {str(e)}", 500
+
+@app.route('/admin/delivery')
+def admin_delivery():
+    """Admin page to manage delivery personnel"""
+    if 'admin_id' not in session:
+        return redirect(url_for('admin_login'))
+    
+    try:
+        db = get_db()
+        cursor = db.cursor(MySQLdb.cursors.DictCursor)
+        
+        cursor.execute("""
+            SELECT d.*, 
+                   COUNT(DISTINCT o.OrderID) as AssignedOrders,
+                   SUM(CASE WHEN o.OrderStatus = 'Complete' THEN 1 ELSE 0 END) as CompletedDeliveries
+            FROM DeliveryMan d
+            LEFT JOIN `Order` o ON d.DeliveryManID = o.DeliveryManID
+            GROUP BY d.DeliveryManID
+            ORDER BY d.Name
+        """)
+        
+        delivery_men = list(cursor.fetchall())
+        
+        cursor.close()
+        db.close()
+        
+        return render_template('admin_delivery.html', delivery_men=delivery_men)
+    except Exception as e:
+        return f"Error: {str(e)}", 500
+
+@app.route('/admin/api/add-product', methods=['POST'])
+def add_product():
+    """Add new product"""
+    if 'admin_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    data = request.get_json()
+    
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        
+        cursor.execute("""
+            INSERT INTO Product (ProductName, Category, Price, StockQuantity, Description, ImageURL, EmbroideryType)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (
+            data.get('name'),
+            data.get('category'),
+            data.get('price'),
+            data.get('stock'),
+            data.get('description'),
+            data.get('image_url'),
+            data.get('embroidery_type', 'None')
+        ))
+        
+        db.commit()
+        product_id = cursor.lastrowid
+        cursor.close()
+        db.close()
+        
+        return jsonify({'success': True, 'product_id': product_id})
+    except Exception as e:
+        if db:
+            db.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/update-product/<int:product_id>', methods=['POST'])
+def update_product(product_id):
+    """Update product"""
+    if 'admin_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    data = request.get_json()
+    
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        
+        cursor.execute("""
+            UPDATE Product 
+            SET ProductName = %s, Category = %s, Price = %s, 
+                StockQuantity = %s, Description = %s, ImageURL = %s, EmbroideryType = %s
+            WHERE ProductID = %s
+        """, (
+            data.get('name'),
+            data.get('category'),
+            data.get('price'),
+            data.get('stock'),
+            data.get('description'),
+            data.get('image_url'),
+            data.get('embroidery_type'),
+            product_id
+        ))
+        
+        db.commit()
+        cursor.close()
+        db.close()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        if db:
+            db.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/delete-product/<int:product_id>', methods=['DELETE'])
+def delete_product(product_id):
+    """Delete product"""
+    if 'admin_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        
+        cursor.execute("DELETE FROM Product WHERE ProductID = %s", (product_id,))
+        
+        db.commit()
+        cursor.close()
+        db.close()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        if db:
+            db.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/assign-delivery', methods=['POST'])
+def assign_delivery():
+    """Assign order to delivery man"""
+    data = request.get_json()
+    order_id = data.get('order_id')
+    delivery_man_id = data.get('delivery_man_id')
+    
+    if not order_id or not delivery_man_id:
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        
+        # Update order with delivery man assignment
+        cursor.execute("""
+            UPDATE `Order` 
+            SET DeliveryManID = %s
+            WHERE OrderID = %s
+        """, (delivery_man_id, order_id))
+        
+        db.commit()
+        cursor.close()
+        db.close()
+        
+        return jsonify({'success': True, 'message': 'Order assigned successfully'})
+    except Exception as e:
+        if db:
+            db.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/customer/<int:customer_id>')
+def get_customer_details(customer_id):
+    """Get customer details"""
+    if 'admin_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        db = get_db()
+        cursor = db.cursor(MySQLdb.cursors.DictCursor)
+        
+        cursor.execute("""
+            SELECT c.*, 
+                   COUNT(DISTINCT o.OrderID) as TotalOrders,
+                   COALESCE(SUM(o.TotalAmount), 0) as TotalSpent
+            FROM Customer c
+            LEFT JOIN `Order` o ON c.CustomerID = o.CustomerID
+            WHERE c.CustomerID = %s
+            GROUP BY c.CustomerID
+        """, (customer_id,))
+        
+        customer = cursor.fetchone()
+        
+        cursor.close()
+        db.close()
+        
+        if customer:
+            return jsonify(customer)
+        else:
+            return jsonify({'error': 'Customer not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/delivery-orders/<int:delivery_man_id>')
+def get_delivery_orders(delivery_man_id):
+    """Get orders assigned to a delivery man"""
+    if 'admin_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        db = get_db()
+        cursor = db.cursor(MySQLdb.cursors.DictCursor)
+        
+        # Get delivery man name
+        cursor.execute("SELECT Name FROM DeliveryMan WHERE DeliveryManID = %s", (delivery_man_id,))
+        delivery_man = cursor.fetchone()
+        
+        if not delivery_man:
+            return jsonify({'error': 'Delivery man not found'}), 404
+        
+        # Get orders
+        cursor.execute("""
+            SELECT o.OrderID, o.TotalAmount, o.OrderStatus, o.PaymentStatus, 
+                   o.OrderDate, c.Name as CustomerName
+            FROM `Order` o
+            JOIN Customer c ON o.CustomerID = c.CustomerID
+            WHERE o.DeliveryManID = %s
+            ORDER BY o.OrderDate DESC
+        """, (delivery_man_id,))
+        
+        orders = list(cursor.fetchall())
+        
+        cursor.close()
+        db.close()
+        
+        return jsonify({
+            'delivery_man_name': delivery_man['Name'],
+            'orders': orders
+        })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

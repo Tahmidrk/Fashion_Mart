@@ -4,6 +4,17 @@ DROP DATABASE IF EXISTS fashion_mart;
 CREATE DATABASE fashion_mart;
 USE fashion_mart;
 
+-- Table: Admin
+CREATE TABLE Admin (
+    AdminID INT PRIMARY KEY AUTO_INCREMENT,
+    Username VARCHAR(50) UNIQUE NOT NULL,
+    Password VARCHAR(255) NOT NULL,
+    Name VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) UNIQUE NOT NULL,
+    Role VARCHAR(50) DEFAULT 'Admin',
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Table: Customer
 CREATE TABLE Customer (
     CustomerID INT PRIMARY KEY AUTO_INCREMENT,
@@ -44,14 +55,33 @@ CREATE TABLE Product (
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Table: DeliveryMan
+CREATE TABLE DeliveryMan (
+    DeliveryManID INT PRIMARY KEY AUTO_INCREMENT,
+    Username VARCHAR(50) UNIQUE NOT NULL,
+    Password VARCHAR(255) NOT NULL,
+    Name VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) UNIQUE NOT NULL,
+    Phone VARCHAR(15) NOT NULL,
+    Address TEXT,
+    VehicleType VARCHAR(50),
+    Status VARCHAR(20) DEFAULT 'Active',
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Table: Order (Note: 'Order' is a reserved keyword, using backticks)
 CREATE TABLE `Order` (
     OrderID INT PRIMARY KEY AUTO_INCREMENT,
     OrderDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     TotalAmount DECIMAL(10, 2) NOT NULL,
     CustomerID INT NOT NULL,
+    DeliveryManID INT,
     OrderStatus VARCHAR(20) DEFAULT 'Pending',
-    FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID) ON DELETE CASCADE
+    PaymentMethod VARCHAR(50) DEFAULT 'Cash on Delivery',
+    PaymentStatus VARCHAR(20) DEFAULT 'Pending',
+    DeliveryAddress TEXT,
+    FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID) ON DELETE CASCADE,
+    FOREIGN KEY (DeliveryManID) REFERENCES DeliveryMan(DeliveryManID) ON DELETE SET NULL
 );
 
 -- Table: OrderItem (Junction table for Order and Product)
@@ -112,10 +142,20 @@ CREATE TABLE Ranking (
 
 -- Insert sample data for testing
 
+-- Sample Admin
+INSERT INTO Admin (Username, Password, Name, Email, Role) VALUES
+('admin', 'admin123', 'System Administrator', 'admin@fashionmart.com', 'Super Admin');
+
 -- Sample Dealers
 INSERT INTO Dealer (DealerName, Contact, Email) VALUES
 ('Fashion Hub Ltd.', '01712345678', 'fashionhub@example.com'),
 ('Style Point', '01823456789', 'stylepoint@example.com');
+
+-- Sample Delivery Men
+INSERT INTO DeliveryMan (Username, Password, Name, Email, Phone, Address, VehicleType, Status) VALUES
+('delivery1', 'delivery123', 'Karim Rahman', 'karim@delivery.com', '01712345670', 'Mirpur, Dhaka', 'Motorcycle', 'Active'),
+('delivery2', 'delivery123', 'Rahim Ahmed', 'rahim@delivery.com', '01812345671', 'Uttara, Dhaka', 'Motorcycle', 'Active'),
+('delivery3', 'delivery123', 'Salam Mia', 'salam@delivery.com', '01912345672', 'Mohammadpur, Dhaka', 'Bicycle', 'Active');
 
 -- Sample Customers
 INSERT INTO Customer (Username, Password, Name, Email, Number, RewardPoint, Road, Area, City, District) VALUES
