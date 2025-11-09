@@ -81,6 +81,22 @@
                         <span>{{ order.DeliveryDate.strftime('%b %d, %Y') }}</span>
                     </div>
                 {% endif %}
+                <div class="summary-row">
+                    <span>Payment Method:</span>
+                    <span>{{ order.PaymentMethod }}</span>
+                </div>
+                {% if order.PaymentMethod == 'Cash on Delivery' %}
+                <div class="summary-row">
+                    <span>Payment Status:</span>
+                    <span>
+                        <span class="badge badge-{{ 'success' if order.PaymentStatus == 'Paid' else 'warning' }}" 
+                              style="padding: 0.35rem 0.75rem; border-radius: 12px; font-size: 0.85rem; font-weight: 500;
+                              background: {% if order.PaymentStatus == 'Paid' %}#28a745; color: white{% else %}#ffc107; color: #000{% endif %};">
+                            {{ order.PaymentStatus }}
+                        </span>
+                    </span>
+                </div>
+                {% endif %}
                 <div class="summary-row total">
                     <span>Total Amount:</span>
                     <span>৳{{ "{:,.2f}".format(order.TotalAmount) }}</span>

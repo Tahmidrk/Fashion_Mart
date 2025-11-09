@@ -164,7 +164,7 @@ INSERT INTO Customer (Username, Password, Name, Email, Number, RewardPoint, Road
 ('guest_user', 'password123', 'Guest User', 'guest@example.com', '01812345680', 0, 'Road 1', 'Banani', 'Dhaka', 'Dhaka');
 
 -- Sample Products (50 items)
-INSERT INTO Product (ProductName, Category, Price, StockQuantity, EmbroideryType, Description, ImageURL) VALUES
+INSERT INTO Product (ProductName, Category, Price, Quantity, Embroidery, Description, ImageURL) VALUES
 -- Sarees (10 items)
 ('Elegant Silk Saree', 'Saree', 4500.00, 25, 'Hand Embroidered', 'Beautiful silk saree with traditional hand embroidery work. Perfect for weddings and special occasions.', 'https://via.placeholder.com/300x400?text=Silk+Saree'),
 ('Cotton Handloom Saree', 'Saree', 2800.00, 30, 'None', 'Pure cotton handloom saree with traditional border design.', 'https://via.placeholder.com/300x400?text=Cotton+Saree'),

@@ -366,7 +366,9 @@ def create_order():
         
         # Calculate total amount
         cart_items = list(cart.values())
-        total_amount = sum(float(item['price']) * int(item['quantity']) for item in cart_items)
+        subtotal = sum(float(item['price']) * int(item['quantity']) for item in cart_items)
+        delivery_charge = 100.00
+        total_amount = subtotal + delivery_charge
         
         # Create order with payment method and delivery address
         cursor.execute("""
@@ -865,10 +867,17 @@ def update_order_status():
             WHERE OrderID = %s
         """, (order_status, order_id))
         
-        # If marked as Delivered AND payment is already Paid (or Online Payment), mark as Complete
-        # For Cash on Delivery, wait for payment confirmation
+        # If marked as Delivered
         if order_status == 'Delivered':
-            if payment_status == 'Paid' or payment_method in ['Online Payment', 'Bank Transfer']:
+            # For Online Payment or Bank Transfer, auto-mark payment as Paid and order as Complete
+            if payment_method in ['Online Payment', 'Bank Transfer']:
+                cursor.execute("""
+                    UPDATE `Order` 
+                    SET PaymentStatus = 'Paid', OrderStatus = 'Complete'
+                    WHERE OrderID = %s
+                """, (order_id,))
+            # For Cash on Delivery with already paid status, mark as Complete
+            elif payment_status == 'Paid':
                 cursor.execute("""
                     UPDATE `Order` 
                     SET OrderStatus = 'Complete'

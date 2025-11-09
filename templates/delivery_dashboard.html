@@ -89,16 +89,21 @@
                 </details>
                 
                 <div style="display: flex; gap: 1rem;">
-                    {% if order.OrderStatus != 'Delivered' %}
-                    <button onclick="updateOrderStatus({{ order.OrderID }}, 'Delivered')" 
-                            class="btn" style="flex: 1;">
+                    {% if order.OrderStatus == 'Pending' %}
+                    <button onclick="updateOrderStatus({{ order.OrderID }}, 'Delivered', this)" 
+                            class="btn" style="flex: 1;" id="btn-{{ order.OrderID }}">
                         Mark as Delivered
+                    </button>
+                    {% elif order.OrderStatus == 'Delivered' or order.OrderStatus == 'Complete' %}
+                    <button disabled class="btn" style="flex: 1; background: #6c757d; cursor: not-allowed;">
+                        ✓ Done
                     </button>
                     {% endif %}
                     
                     {% if order.PaymentMethod == 'Cash on Delivery' and order.PaymentStatus == 'Pending' and order.OrderStatus == 'Delivered' %}
-                    <button onclick="updatePaymentStatus({{ order.OrderID }}, 'Paid')" 
-                            class="btn" style="flex: 1; background: linear-gradient(135deg, #28a745, #20c997);">
+                    <button onclick="updatePaymentStatus({{ order.OrderID }}, 'Paid', this)" 
+                            class="btn" style="flex: 1; background: linear-gradient(135deg, #28a745, #20c997);" 
+                            id="pay-btn-{{ order.OrderID }}">
                         Confirm Cash Received
                     </button>
                     {% endif %}
@@ -117,9 +122,15 @@
 
 {% block extra_js %}
 <script>
-function updateOrderStatus(orderId, status) {
+function updateOrderStatus(orderId, status, buttonElement) {
     if (!confirm(`Mark order #${orderId} as ${status}?`)) {
         return;
+    }
+    
+    // Disable button and show loading
+    if (buttonElement) {
+        buttonElement.disabled = true;
+        buttonElement.textContent = 'Processing...';
     }
     
     fetch('/delivery/api/update-order-status', {
@@ -133,21 +144,42 @@ function updateOrderStatus(orderId, status) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            // Change button to Done
+            if (buttonElement) {
+                buttonElement.textContent = '✓ Done';
+                buttonElement.style.background = '#6c757d';
+                buttonElement.style.cursor = 'not-allowed';
+            }
             alert('Order status updated successfully!');
-            location.reload();
+            // Reload to update payment button for COD orders
+            setTimeout(() => location.reload(), 1000);
         } else {
             alert('Error: ' + (data.error || 'Failed to update'));
+            if (buttonElement) {
+                buttonElement.disabled = false;
+                buttonElement.textContent = 'Mark as Delivered';
+            }
         }
     })
     .catch(error => {
         console.error('Error:', error);
         alert('An error occurred');
+        if (buttonElement) {
+            buttonElement.disabled = false;
+            buttonElement.textContent = 'Mark as Delivered';
+        }
     });
 }
 
-function updatePaymentStatus(orderId, status) {
+function updatePaymentStatus(orderId, status, buttonElement) {
     if (!confirm(`Confirm cash payment received for order #${orderId}?`)) {
         return;
+    }
+    
+    // Disable button and show loading
+    if (buttonElement) {
+        buttonElement.disabled = true;
+        buttonElement.textContent = 'Processing...';
     }
     
     fetch('/delivery/api/update-payment-status', {
@@ -161,15 +193,29 @@ function updatePaymentStatus(orderId, status) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            // Change button to Done
+            if (buttonElement) {
+                buttonElement.textContent = '✓ Payment Received';
+                buttonElement.style.background = '#6c757d';
+                buttonElement.style.cursor = 'not-allowed';
+            }
             alert('Payment status updated successfully!');
-            location.reload();
+            setTimeout(() => location.reload(), 1000);
         } else {
             alert('Error: ' + (data.error || 'Failed to update'));
+            if (buttonElement) {
+                buttonElement.disabled = false;
+                buttonElement.textContent = 'Confirm Cash Received';
+            }
         }
     })
     .catch(error => {
         console.error('Error:', error);
         alert('An error occurred');
+        if (buttonElement) {
+            buttonElement.disabled = false;
+            buttonElement.textContent = 'Confirm Cash Received';
+        }
     });
 }
 </script>

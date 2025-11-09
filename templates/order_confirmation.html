@@ -81,11 +81,11 @@
         <div style="border-top: 2px solid #e0e0e0; padding-top: 1.5rem;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
                 <span style="color: #666;">Subtotal:</span>
-                <span style="font-weight: 600;">৳{{ "{:,.2f}".format(order.TotalAmount) }}</span>
+                <span style="font-weight: 600;">৳{{ "{:,.2f}".format(order.TotalAmount - 100) }}</span>
             </div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
                 <span style="color: #666;">Delivery Charge:</span>
-                <span style="font-weight: 600; color: #4caf50;">FREE</span>
+                <span style="font-weight: 600;">৳100.00</span>
             </div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
                 <span style="color: #666;">Tax:</span>
@@ -100,12 +100,33 @@
         </div>
 
         <!-- Status Badges -->
-        <div style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #4caf5011 0%, #8bc34a22 100%); border-radius: 8px; text-align: center;">
-            <div style="margin-bottom: 0.5rem;">
-                <span class="badge badge-success" style="font-size: 1rem; padding: 0.5rem 1rem;">Order Status: {{ order.OrderStatus }}</span>
+        <div style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #4caf5011 0%, #8bc34a22 100%); border-radius: 8px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; text-align: center;">
+                <div>
+                    <div style="color: #666; font-size: 0.85rem; margin-bottom: 0.5rem;">Order Status</div>
+                    <span class="badge badge-success" style="font-size: 1rem; padding: 0.5rem 1rem;">{{ order.OrderStatus }}</span>
+                </div>
+                <div>
+                    <div style="color: #666; font-size: 0.85rem; margin-bottom: 0.5rem;">Delivery Status</div>
+                    <span class="badge badge-info" style="font-size: 1rem; padding: 0.5rem 1rem;">{{ order.DeliveryStatus }}</span>
+                </div>
             </div>
-            <div>
-                <span class="badge badge-info" style="font-size: 1rem; padding: 0.5rem 1rem;">Delivery Status: {{ order.DeliveryStatus }}</span>
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e0e0e0;">
+                <div style="display: grid; grid-template-columns: {% if order.PaymentMethod == 'Cash on Delivery' %}1fr 1fr{% else %}1fr{% endif %}; gap: 1rem; text-align: center;">
+                    <div>
+                        <div style="color: #666; font-size: 0.85rem; margin-bottom: 0.5rem;">Payment Method</div>
+                        <span style="font-weight: 600;">{{ order.PaymentMethod }}</span>
+                    </div>
+                    {% if order.PaymentMethod == 'Cash on Delivery' %}
+                    <div>
+                        <div style="color: #666; font-size: 0.85rem; margin-bottom: 0.5rem;">Payment Status</div>
+                        <span class="badge badge-{{ 'success' if order.PaymentStatus == 'Paid' else 'warning' }}" 
+                              style="font-size: 1rem; padding: 0.5rem 1rem;">
+                            {{ order.PaymentStatus }}
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
 
@@ -116,6 +137,9 @@
                 <li>We'll send you an email confirmation shortly</li>
                 <li>Your order will be processed within 1-2 business days</li>
                 <li>Expected delivery: 3-5 business days</li>
+                {% if order.PaymentMethod == 'Cash on Delivery' %}
+                <li><strong>Payment:</strong> Please keep {{ "{:,.2f}".format(order.TotalAmount) }} BDT ready for cash on delivery</li>
+                {% endif %}
                 <li>You can track your order status anytime from "My Orders"</li>
             </ul>
         </div>

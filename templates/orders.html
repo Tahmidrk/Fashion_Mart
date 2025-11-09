@@ -21,12 +21,25 @@
                             <div style="font-size: 1.5rem; font-weight: bold; color: #e91e63; margin-bottom: 0.5rem;">
                                 ৳{{ "{:,.2f}".format(order.TotalAmount) }}
                             </div>
-                            <span class="badge badge-{{ 'success' if order.OrderStatus == 'Delivered' else 'warning' }}">
-                                {{ order.OrderStatus }}
-                            </span>
-                            <span class="badge badge-{{ 'success' if order.DeliveryStatus == 'Delivered' else 'info' }}" style="margin-left: 0.5rem;">
-                                Delivery: {{ order.DeliveryStatus }}
-                            </span>
+                            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                <span class="badge badge-{{ 'success' if order.OrderStatus == 'Delivered' else 'warning' }}" 
+                                      style="padding: 0.35rem 0.75rem; border-radius: 12px; font-size: 0.85rem;">
+                                    Order: {{ order.OrderStatus }}
+                                </span>
+                                <span class="badge badge-{{ 'success' if order.DeliveryStatus == 'Delivered' else 'info' }}" 
+                                      style="padding: 0.35rem 0.75rem; border-radius: 12px; font-size: 0.85rem;">
+                                    Delivery: {{ order.DeliveryStatus }}
+                                </span>
+                            </div>
+                            <div style="margin-top: 0.5rem;">
+                                <span style="font-size: 0.85rem; color: #666;">Payment: {{ order.PaymentMethod }}</span>
+                                {% if order.PaymentMethod == 'Cash on Delivery' %}
+                                <span class="badge badge-{{ 'success' if order.PaymentStatus == 'Paid' else 'warning' }}" 
+                                      style="margin-left: 0.5rem; padding: 0.35rem 0.75rem; border-radius: 12px; font-size: 0.85rem;">
+                                    {{ order.PaymentStatus }}
+                                </span>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                     
