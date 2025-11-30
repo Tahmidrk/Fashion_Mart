@@ -238,7 +238,7 @@
     </div>
 </div>
 
-<button class="btn-add-delivery" onclick="alert('Add delivery person feature - Coming soon!')">
+<button class="btn-add-delivery" onclick="openAddModal()">
     <i class="fas fa-user-plus"></i> Add New Delivery Person
 </button>
 
@@ -316,12 +316,70 @@
     {% endfor %}
 </div>
 
+<!-- Add Delivery Person Modal -->
+<div id="addDeliveryModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="background: white; max-width: 600px; margin: 2rem auto; padding: 2rem; border-radius: 10px; max-height: 85vh; overflow-y: auto;">
+        <h2 style="margin-bottom: 1.5rem;">Add New Delivery Person</h2>
+        <form id="addDeliveryForm">
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Full Name *</label>
+                <input type="text" id="deliveryName" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Username *</label>
+                <input type="text" id="deliveryUsername" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Password *</label>
+                <input type="password" id="deliveryPassword" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Email *</label>
+                <input type="email" id="deliveryEmail" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Phone *</label>
+                <input type="tel" id="deliveryPhone" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Address</label>
+                <textarea id="deliveryAddress" rows="2" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; resize: vertical;"></textarea>
+            </div>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Vehicle Type *</label>
+                <select id="deliveryVehicle" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+                    <option value="">Select Vehicle Type</option>
+                    <option value="Motorcycle">Motorcycle</option>
+                    <option value="Bicycle">Bicycle</option>
+                    <option value="Van">Van</option>
+                    <option value="Car">Car</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" style="flex: 1; padding: 0.75rem; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem;">
+                    <i class="fas fa-save"></i> Add Delivery Person
+                </button>
+                <button type="button" onclick="closeAddModal()" style="flex: 1; padding: 0.75rem; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem;">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Orders Modal -->
 <div id="ordersModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
     <div style="background: white; max-width: 800px; margin: 2rem auto; padding: 2rem; border-radius: 10px; max-height: 85vh; overflow-y: auto;">
         <h2 id="modalTitle">Delivery Orders</h2>
         <div id="modalContent"></div>
-        <button onclick="closeModal()" style="margin-top: 1rem; padding: 0.75rem 2rem; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">Close</button>
+        <button onclick="closeOrdersModal()" style="margin-top: 1rem; padding: 0.75rem 2rem; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">Close</button>
     </div>
 </div>
 
@@ -329,6 +387,51 @@
 
 {% block extra_js %}
 <script>
+    function openAddModal() {
+        document.getElementById('addDeliveryForm').reset();
+        document.getElementById('addDeliveryModal').style.display = 'block';
+    }
+    
+    function closeAddModal() {
+        document.getElementById('addDeliveryModal').style.display = 'none';
+    }
+    
+    // Handle add delivery form submission
+    document.getElementById('addDeliveryForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const deliveryData = {
+            name: document.getElementById('deliveryName').value,
+            username: document.getElementById('deliveryUsername').value,
+            password: document.getElementById('deliveryPassword').value,
+            email: document.getElementById('deliveryEmail').value,
+            phone: document.getElementById('deliveryPhone').value,
+            address: document.getElementById('deliveryAddress').value,
+            vehicle_type: document.getElementById('deliveryVehicle').value
+        };
+        
+        fetch('/admin/api/add-delivery-person', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(deliveryData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Delivery person added successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Failed to add delivery person'));
+            }
+        })
+        .catch(error => {
+            alert('Error adding delivery person');
+            console.error(error);
+        });
+    });
+    
     function viewDeliveryOrders(deliveryManId) {
         fetch(`/admin/api/delivery-orders/${deliveryManId}`)
             .then(response => response.json())
@@ -368,14 +471,20 @@
             });
     }
     
-    function closeModal() {
+    function closeOrdersModal() {
         document.getElementById('ordersModal').style.display = 'none';
     }
     
-    // Close modal on outside click
+    // Close modals on outside click
+    document.getElementById('addDeliveryModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeAddModal();
+        }
+    });
+    
     document.getElementById('ordersModal').addEventListener('click', function(e) {
         if (e.target === this) {
-            closeModal();
+            closeOrdersModal();
         }
     });
 </script>

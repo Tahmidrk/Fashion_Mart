@@ -174,7 +174,7 @@ INSERT INTO Product (ProductName, Category, Price, Quantity, Embroidery, Descrip
 ('Kanjivaram Silk Saree', 'Saree', 7500.00, 12, 'Hand Embroidered', 'Authentic Kanjivaram silk saree with temple border.', 'https://via.placeholder.com/300x400?text=Kanjivaram+Saree'),
 ('Tussar Silk Saree', 'Saree', 4200.00, 18, 'None', 'Natural tussar silk saree with ethnic charm.', 'https://via.placeholder.com/300x400?text=Tussar+Saree'),
 ('Party Wear Saree', 'Saree', 3800.00, 22, 'Machine Embroidered', 'Glamorous party wear saree with sequin work.', 'https://via.placeholder.com/300x400?text=Party+Saree'),
-('Jamdani Saree', 'Saree', 5200.00, 14, 'Hand Embroidered', 'Traditional Jamdani saree with fine muslin fabric.', 'https://via.placeholder.com/300x400?text=Jamdani+Saree'),
+('Jamdani Saree', 'Saree', 5200.00, 14, 'Hand Embroidered', 'Traditional Jamdani saree with fine muslin fabric.', 'https://tskbd.com/wp-content/uploads/2023/04/TSK-4.jpg'),
 ('Embroidered Net Saree', 'Saree', 3200.00, 25, 'Machine Embroidered', 'Elegant net saree with beautiful embroidery work.', 'https://via.placeholder.com/300x400?text=Net+Saree'),
 
 -- Punjabi/Men's Traditional (10 items)
@@ -194,7 +194,7 @@ INSERT INTO Product (ProductName, Category, Price, Quantity, Embroidery, Descrip
 ('Embroidered Salwar Kameez', 'Salwar Kameez', 3200.00, 20, 'Hand Embroidered', 'Luxurious salwar kameez with intricate hand embroidery and fine fabric.', 'https://via.placeholder.com/300x400?text=Salwar+Kameez'),
 ('Party Dress', 'Dress', 2800.00, 15, 'Machine Embroidered', 'Stunning party dress with modern design and embroidery details.', 'https://via.placeholder.com/300x400?text=Party+Dress'),
 ('Traditional Lehenga', 'Lehenga', 6500.00, 10, 'Hand Embroidered', 'Exquisite traditional lehenga with heavy embroidery work for weddings.', 'https://via.placeholder.com/300x400?text=Lehenga'),
-('Anarkali Suit', 'Salwar Kameez', 3800.00, 18, 'Machine Embroidered', 'Elegant Anarkali suit with flowing silhouette.', 'https://via.placeholder.com/300x400?text=Anarkali'),
+('Anarkali Suit', 'Salwar Kameez', 3800.00, 18, 'Machine Embroidered', 'Elegant Anarkali suit with flowing silhouette.', 'https://citystanja.com/cdn/shop/files/1-14-269098-l-1-_1.jpg?v=1695453009&width=800'),
 ('Palazzo Set', 'Kurti', 1800.00, 30, 'None', 'Trendy kurti with palazzo pants combination.', 'https://via.placeholder.com/300x400?text=Palazzo+Set'),
 ('Long Gown', 'Dress', 3500.00, 12, 'Machine Embroidered', 'Graceful long gown for evening parties.', 'https://via.placeholder.com/300x400?text=Long+Gown'),
 ('Cotton Kurti', 'Kurti', 900.00, 50, 'None', 'Comfortable cotton kurti for daily wear.', 'https://via.placeholder.com/300x400?text=Cotton+Kurti'),

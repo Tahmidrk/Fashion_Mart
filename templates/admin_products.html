@@ -294,16 +294,16 @@
         <img src="{{ product.ImageURL }}" alt="{{ product.ProductName }}" class="product-image" onerror="this.src='https://via.placeholder.com/280x200?text=No+Image'">
         <div class="product-info">
             <div class="product-name">{{ product.ProductName }}</div>
-            <div class="product-category">{{ product.Category }} • {{ product.EmbroideryType }}</div>
+            <div class="product-category">{{ product.Category }} • {{ product.Embroidery }}</div>
             <div class="product-price">৳{{ "%.2f"|format(product.Price) }}</div>
-            <div class="product-stock {% if product.StockQuantity > 10 %}in-stock{% elif product.StockQuantity > 0 %}low-stock{% else %}out-stock{% endif %}">
-                Stock: {{ product.StockQuantity }} units
+            <div class="product-stock {% if product.Quantity > 10 %}in-stock{% elif product.Quantity > 0 %}low-stock{% else %}out-stock{% endif %}">
+                Stock: {{ product.Quantity }} units
             </div>
             <div class="product-actions">
-                <button class="btn-edit" onclick='editProduct({{ product.ProductID }}, "{{ product.ProductName }}", "{{ product.Category }}", {{ product.Price }}, {{ product.StockQuantity }}, "{{ product.Description }}", "{{ product.EmbroideryType }}", "{{ product.ImageURL }}")'>
+                <button class="btn-edit" onclick='editProduct({{ product.ProductID }}, "{{ product.ProductName }}", "{{ product.Category }}", {{ product.Price }}, {{ product.Quantity }}, "{{ product.Description|replace("'", "\\'") }}", "{{ product.Embroidery }}", "{{ product.ImageURL }}")'>
                     <i class="fas fa-edit"></i> Edit
                 </button>
-                <button class="btn-delete" onclick="deleteProduct({{ product.ProductID }}, '{{ product.ProductName }}')">
+                <button class="btn-delete" onclick="deleteProduct({{ product.ProductID }}, '{{ product.ProductName|replace("'", "\\'") }}')">
                     <i class="fas fa-trash"></i> Delete
                 </button>
             </div>
@@ -333,12 +333,19 @@
                 <label for="category">Category *</label>
                 <select id="category" required>
                     <option value="">Select Category</option>
+                    <option value="Saree">Saree</option>
                     <option value="Punjabi">Punjabi</option>
-                    <option value="Panjabi">Panjabi</option>
+                    <option value="Kurti">Kurti</option>
+                    <option value="Salwar Kameez">Salwar Kameez</option>
+                    <option value="Lehenga">Lehenga</option>
+                    <option value="Dress">Dress</option>
                     <option value="Shirt">Shirt</option>
                     <option value="T-Shirt">T-Shirt</option>
-                    <option value="Casual">Casual</option>
-                    <option value="Formal">Formal</option>
+                    <option value="Jeans">Jeans</option>
+                    <option value="Pants">Pants</option>
+                    <option value="Jacket">Jacket</option>
+                    <option value="Accessories">Accessories</option>
+                    <option value="Footwear">Footwear</option>
                 </select>
             </div>
             

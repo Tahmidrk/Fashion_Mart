@@ -1060,7 +1060,7 @@ def admin_customers():
         cursor.execute("""
             SELECT c.*, 
                    COUNT(DISTINCT o.OrderID) as TotalOrders,
-                   COALESCE(SUM(o.TotalAmount), 0) as TotalSpent
+                   COALESCE(SUM(CASE WHEN o.OrderStatus = 'Complete' THEN o.TotalAmount ELSE 0 END), 0) as TotalSpent
             FROM Customer c
             LEFT JOIN `Order` o ON c.CustomerID = o.CustomerID
             GROUP BY c.CustomerID
@@ -1138,7 +1138,7 @@ def add_product():
         cursor = db.cursor()
         
         cursor.execute("""
-            INSERT INTO Product (ProductName, Category, Price, StockQuantity, Description, ImageURL, EmbroideryType)
+            INSERT INTO Product (ProductName, Category, Price, Quantity, Description, ImageURL, Embroidery)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
         """, (
             data.get('name'),
@@ -1176,7 +1176,7 @@ def update_product(product_id):
         cursor.execute("""
             UPDATE Product 
             SET ProductName = %s, Category = %s, Price = %s, 
-                StockQuantity = %s, Description = %s, ImageURL = %s, EmbroideryType = %s
+                Quantity = %s, Description = %s, ImageURL = %s, Embroidery = %s
             WHERE ProductID = %s
         """, (
             data.get('name'),
@@ -1216,6 +1216,59 @@ def delete_product(product_id):
         db.close()
         
         return jsonify({'success': True})
+    except Exception as e:
+        if db:
+            db.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/api/add-delivery-person', methods=['POST'])
+def add_delivery_person():
+    """Add new delivery person"""
+    if 'admin_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    data = request.get_json()
+    
+    # Validate required fields
+    required_fields = ['name', 'username', 'password', 'email', 'phone', 'vehicle_type']
+    for field in required_fields:
+        if not data.get(field):
+            return jsonify({'error': f'Missing required field: {field}'}), 400
+    
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        
+        # Check if username already exists
+        cursor.execute("SELECT DeliveryManID FROM DeliveryMan WHERE Username = %s", (data['username'],))
+        if cursor.fetchone():
+            return jsonify({'error': 'Username already exists'}), 400
+        
+        # Check if email already exists
+        cursor.execute("SELECT DeliveryManID FROM DeliveryMan WHERE Email = %s", (data['email'],))
+        if cursor.fetchone():
+            return jsonify({'error': 'Email already exists'}), 400
+        
+        # Insert new delivery person
+        cursor.execute("""
+            INSERT INTO DeliveryMan (Username, Password, Name, Email, Phone, Address, VehicleType, Status)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, 'Active')
+        """, (
+            data['username'],
+            data['password'],
+            data['name'],
+            data['email'],
+            data['phone'],
+            data.get('address', ''),
+            data['vehicle_type']
+        ))
+        
+        db.commit()
+        delivery_man_id = cursor.lastrowid
+        cursor.close()
+        db.close()
+        
+        return jsonify({'success': True, 'delivery_man_id': delivery_man_id})
     except Exception as e:
         if db:
             db.rollback()
@@ -1265,7 +1318,7 @@ def get_customer_details(customer_id):
         cursor.execute("""
             SELECT c.*, 
                    COUNT(DISTINCT o.OrderID) as TotalOrders,
-                   COALESCE(SUM(o.TotalAmount), 0) as TotalSpent
+                   COALESCE(SUM(CASE WHEN o.OrderStatus = 'Complete' THEN o.TotalAmount ELSE 0 END), 0) as TotalSpent
             FROM Customer c
             LEFT JOIN `Order` o ON c.CustomerID = o.CustomerID
             WHERE c.CustomerID = %s
