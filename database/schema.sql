@@ -163,67 +163,44 @@ INSERT INTO Customer (Username, Password, Name, Email, Number, RewardPoint, Road
 ('jane_smith', 'password123', 'Jane Smith', 'jane@example.com', '01712345679', 50, 'Road 10', 'Gulshan', 'Dhaka', 'Dhaka'),
 ('guest_user', 'password123', 'Guest User', 'guest@example.com', '01812345680', 0, 'Road 1', 'Banani', 'Dhaka', 'Dhaka');
 
--- Sample Products (50 items)
+-- Sample Products
 INSERT INTO Product (ProductName, Category, Price, Quantity, Embroidery, Description, ImageURL) VALUES
--- Sarees (10 items)
-('Elegant Silk Saree', 'Saree', 4500.00, 25, 'Hand Embroidered', 'Beautiful silk saree with traditional hand embroidery work. Perfect for weddings and special occasions.', 'https://via.placeholder.com/300x400?text=Silk+Saree'),
-('Cotton Handloom Saree', 'Saree', 2800.00, 30, 'None', 'Pure cotton handloom saree with traditional border design.', 'https://via.placeholder.com/300x400?text=Cotton+Saree'),
-('Designer Georgette Saree', 'Saree', 3500.00, 20, 'Machine Embroidered', 'Lightweight georgette saree with modern embroidery patterns.', 'https://via.placeholder.com/300x400?text=Georgette+Saree'),
-('Banarasi Silk Saree', 'Saree', 6500.00, 15, 'Hand Embroidered', 'Premium Banarasi silk saree with intricate zari work.', 'https://via.placeholder.com/300x400?text=Banarasi+Saree'),
-('Printed Chiffon Saree', 'Saree', 1800.00, 40, 'None', 'Trendy printed chiffon saree for casual and party wear.', 'https://via.placeholder.com/300x400?text=Chiffon+Saree'),
-('Kanjivaram Silk Saree', 'Saree', 7500.00, 12, 'Hand Embroidered', 'Authentic Kanjivaram silk saree with temple border.', 'https://via.placeholder.com/300x400?text=Kanjivaram+Saree'),
-('Tussar Silk Saree', 'Saree', 4200.00, 18, 'None', 'Natural tussar silk saree with ethnic charm.', 'https://via.placeholder.com/300x400?text=Tussar+Saree'),
-('Party Wear Saree', 'Saree', 3800.00, 22, 'Machine Embroidered', 'Glamorous party wear saree with sequin work.', 'https://via.placeholder.com/300x400?text=Party+Saree'),
+-- Sarees
+('Elegant Silk Saree', 'Saree', 4500.00, 25, 'Hand Embroidered', 'Beautiful silk saree with traditional hand embroidery work. Perfect for weddings and special occasions.', 'https://womanhood.com.bd/cdn/shop/files/62FB7F37-D569-4B5F-8D1A-068D839DBB2A.jpg?v=1758449780&width=360'),
+('Cotton Punjabi', 'Punjabi', 1800.00, 40, 'Machine Embroidered', 'Comfortable cotton punjabi for everyday wear with elegant machine embroidery.', 'https://mcprod.aarong.com/media/catalog/product/0/0/0030000140073.jpg?optimize=high&bg-color=255,255,255&fit=bounds&height=&width='),
+('Designer Kurti', 'Kurti', 1200.00, 35, 'None', 'Modern designer kurti with vibrant colors and patterns.', 'https://assets0.mirraw.com/images/12379419/image_zoom.jpeg?1712410050'),
+('Formal Shirt', 'Shirt', 1500.00, 50, 'None', 'Premium quality formal shirt for office and business meetings.', 'https://www.lerevecraze.com/wp-content/uploads/2025/11/ade37c2d-ee15-40d1-91ba-c4195d06b2de.jpg'),
+('Embroidered Salwar Kameez', 'Salwar Kameez', 3200.00, 20, 'Hand Embroidered', 'Luxurious salwar kameez with intricate hand embroidery and fine fabric.', 'https://miah.shop/_next/image?url=https%3A%2F%2Fimages.miah.shop%2Fproduct%2F%2Fm_thumb%2FStandard_Saree_Shewly_1001_3196A_1.jpg&w=1920&q=75'),
+('Casual T-Shirt', 'T-Shirt', 600.00, 100, 'None', 'Comfortable casual t-shirt available in multiple colors.', 'https://4.imimg.com/data4/KS/HD/MY-718120/mens-casual-t-shirts.jpg'),
+('Denim Jeans', 'Jeans', 2200.00, 45, 'None', 'Classic denim jeans with perfect fit and durability.', 'https://fabrilife.com/products/651830ea3218b-square.png?v=20'),
+('Traditional Lehenga', 'Lehenga', 6500.00, 10, 'Hand Embroidered', 'Exquisite traditional lehenga with heavy embroidery work for weddings.', 'https://img0.junaroad.com/uiproducts/20970499/pri_175_p-1708088695.jpg'),
+('Polo Shirt', 'Shirt', 1100.00, 60, 'None', 'Classic polo shirt for casual and semi-formal occasions.', 'https://xcdn.next.co.uk/common/items/default/default/itemimages/3_4Ratio/product/lge/K90240s.jpg?im=Resize,width=750'),
+('Cotton Handloom Saree', 'Saree', 2800.00, 30, 'None', 'Pure cotton handloom saree with traditional border design.', 'https://img.drz.lazcdn.com/static/bd/p/1b868570bafaa1307410c1a89a8e4b10.jpg_200x200q80.avif'),
+('Designer Georgette Saree', 'Saree', 3500.00, 20, 'Machine Embroidered', 'Lightweight georgette saree with modern embroidery patterns.', 'https://www.smarteshopbd.com/wp-content/uploads/2025/11/saree27.webp'),
+('Banarasi Silk Saree', 'Saree', 6500.00, 15, 'Hand Embroidered', 'Premium Banarasi silk saree with intricate zari work.', 'https://www.karagiri.com/cdn/shop/products/banarasi-saree-mahogany-maroon-banarasi-saree-silk-saree-online-31828994130113_300x.jpg?v=1754985941'),
+('Printed Chiffon Saree', 'Saree', 1800.00, 40, 'None', 'Trendy printed chiffon saree for casual and party wear.', 'https://peachmode.com/cdn/shop/files/1_JNX-RUCHI-STAR122-24904A.jpg?v=1695467424'),
+('Kanjivaram Silk Saree', 'Saree', 7500.00, 12, 'Hand Embroidered', 'Authentic Kanjivaram silk saree with temple border.', 'https://rongpolli.com/storage/2024/09/Kanjivaram-Saree-1850-2.jpg'),
+('Party Wear Saree', 'Saree', 3800.00, 22, 'Machine Embroidered', 'Glamorous party wear saree with sequin work.', 'https://cdn.sapnaaz.com/uploads/2024/10/15172505/1307-1-1.webp'),
 ('Jamdani Saree', 'Saree', 5200.00, 14, 'Hand Embroidered', 'Traditional Jamdani saree with fine muslin fabric.', 'https://tskbd.com/wp-content/uploads/2023/04/TSK-4.jpg'),
-('Embroidered Net Saree', 'Saree', 3200.00, 25, 'Machine Embroidered', 'Elegant net saree with beautiful embroidery work.', 'https://via.placeholder.com/300x400?text=Net+Saree'),
-
--- Punjabi/Men's Traditional (10 items)
-('Cotton Punjabi', 'Punjabi', 1800.00, 40, 'Machine Embroidered', 'Comfortable cotton punjabi for everyday wear with elegant machine embroidery.', 'https://via.placeholder.com/300x400?text=Cotton+Punjabi'),
-('Silk Punjabi', 'Punjabi', 2500.00, 30, 'Hand Embroidered', 'Premium silk punjabi with hand embroidery for special occasions.', 'https://via.placeholder.com/300x400?text=Silk+Punjabi'),
-('Linen Punjabi', 'Punjabi', 2200.00, 35, 'None', 'Breathable linen punjabi perfect for summer wear.', 'https://via.placeholder.com/300x400?text=Linen+Punjabi'),
-('Designer Punjabi', 'Punjabi', 2800.00, 25, 'Machine Embroidered', 'Modern designer punjabi with contemporary patterns.', 'https://via.placeholder.com/300x400?text=Designer+Punjabi'),
-('Festive Punjabi', 'Punjabi', 3200.00, 20, 'Hand Embroidered', 'Festive punjabi with rich embroidery and premium fabric.', 'https://via.placeholder.com/300x400?text=Festive+Punjabi'),
-('Casual Punjabi', 'Punjabi', 1500.00, 50, 'None', 'Simple casual punjabi for everyday comfort.', 'https://via.placeholder.com/300x400?text=Casual+Punjabi'),
-('Eid Special Punjabi', 'Punjabi', 3500.00, 28, 'Hand Embroidered', 'Special Eid collection punjabi with elegant design.', 'https://via.placeholder.com/300x400?text=Eid+Punjabi'),
-('Printed Punjabi', 'Punjabi', 1600.00, 45, 'None', 'Trendy printed punjabi with modern motifs.', 'https://via.placeholder.com/300x400?text=Printed+Punjabi'),
-('Khadi Punjabi', 'Punjabi', 2000.00, 32, 'None', 'Eco-friendly khadi punjabi with natural feel.', 'https://via.placeholder.com/300x400?text=Khadi+Punjabi'),
-('Premium Cotton Punjabi', 'Punjabi', 2100.00, 38, 'Machine Embroidered', 'High-quality cotton punjabi with fine embroidery.', 'https://via.placeholder.com/300x400?text=Premium+Punjabi'),
-
--- Women's Wear (10 items)
-('Designer Kurti', 'Kurti', 1200.00, 35, 'None', 'Modern designer kurti with vibrant colors and patterns.', 'https://via.placeholder.com/300x400?text=Designer+Kurti'),
-('Embroidered Salwar Kameez', 'Salwar Kameez', 3200.00, 20, 'Hand Embroidered', 'Luxurious salwar kameez with intricate hand embroidery and fine fabric.', 'https://via.placeholder.com/300x400?text=Salwar+Kameez'),
-('Party Dress', 'Dress', 2800.00, 15, 'Machine Embroidered', 'Stunning party dress with modern design and embroidery details.', 'https://via.placeholder.com/300x400?text=Party+Dress'),
-('Traditional Lehenga', 'Lehenga', 6500.00, 10, 'Hand Embroidered', 'Exquisite traditional lehenga with heavy embroidery work for weddings.', 'https://via.placeholder.com/300x400?text=Lehenga'),
+('Embroidered Net Saree', 'Saree', 3200.00, 25, 'Machine Embroidered', 'Elegant net saree with beautiful embroidery work.', 'https://medias.utsavfashion.com/media/catalog/product/cache/1/image/1000x/040ec09b1e35df139433887a97daa66f/e/m/embroidered-net-saree-in-off-white-v1-spta13205.jpg'),
+('Designer Punjabi', 'Punjabi', 2800.00, 25, 'Machine Embroidered', 'Modern designer punjabi with contemporary patterns.', 'https://cdn.shopify.com/s/files/1/0549/6586/2483/files/high-quality-unique-boutique-designer-panjabi-9979131_360x.jpg?v=1760551816'),
+('Casual Punjabi', 'Punjabi', 1500.00, 50, 'None', 'Simple casual punjabi for everyday comfort.', 'https://www.adlibbd.com/public/uploads/all/b6fff3664570345d98f682596b2fa3de-252141.jpg'),
 ('Anarkali Suit', 'Salwar Kameez', 3800.00, 18, 'Machine Embroidered', 'Elegant Anarkali suit with flowing silhouette.', 'https://citystanja.com/cdn/shop/files/1-14-269098-l-1-_1.jpg?v=1695453009&width=800'),
-('Palazzo Set', 'Kurti', 1800.00, 30, 'None', 'Trendy kurti with palazzo pants combination.', 'https://via.placeholder.com/300x400?text=Palazzo+Set'),
-('Long Gown', 'Dress', 3500.00, 12, 'Machine Embroidered', 'Graceful long gown for evening parties.', 'https://via.placeholder.com/300x400?text=Long+Gown'),
-('Cotton Kurti', 'Kurti', 900.00, 50, 'None', 'Comfortable cotton kurti for daily wear.', 'https://via.placeholder.com/300x400?text=Cotton+Kurti'),
-('Sharara Set', 'Salwar Kameez', 4200.00, 14, 'Hand Embroidered', 'Traditional sharara set with rich embroidery.', 'https://via.placeholder.com/300x400?text=Sharara'),
-('Maxi Dress', 'Dress', 2200.00, 25, 'None', 'Flowing maxi dress for casual and party wear.', 'https://via.placeholder.com/300x400?text=Maxi+Dress'),
-
--- Men's Casual Wear (10 items)
-('Formal Shirt', 'Shirt', 1500.00, 50, 'None', 'Premium quality formal shirt for office and business meetings.', 'https://via.placeholder.com/300x400?text=Formal+Shirt'),
-('Casual T-Shirt', 'T-Shirt', 600.00, 100, 'None', 'Comfortable casual t-shirt available in multiple colors.', 'https://via.placeholder.com/300x400?text=T-Shirt'),
-('Denim Jeans', 'Jeans', 2200.00, 45, 'None', 'Classic denim jeans with perfect fit and durability.', 'https://via.placeholder.com/300x400?text=Denim+Jeans'),
-('Polo Shirt', 'Shirt', 1100.00, 60, 'None', 'Classic polo shirt for casual and semi-formal occasions.', 'https://via.placeholder.com/300x400?text=Polo+Shirt'),
-('Chino Pants', 'Pants', 1800.00, 40, 'None', 'Stylish chino pants for smart casual look.', 'https://via.placeholder.com/300x400?text=Chino+Pants'),
-('Hoodie', 'Jacket', 2000.00, 35, 'None', 'Cozy hoodie for winter and casual outings.', 'https://via.placeholder.com/300x400?text=Hoodie'),
-('Cargo Pants', 'Pants', 1900.00, 30, 'None', 'Functional cargo pants with multiple pockets.', 'https://via.placeholder.com/300x400?text=Cargo+Pants'),
-('Henley Shirt', 'Shirt', 1200.00, 45, 'None', 'Trendy henley shirt for casual style.', 'https://via.placeholder.com/300x400?text=Henley+Shirt'),
-('Track Pants', 'Pants', 1300.00, 55, 'None', 'Comfortable track pants for sports and leisure.', 'https://via.placeholder.com/300x400?text=Track+Pants'),
-('Denim Jacket', 'Jacket', 2800.00, 25, 'None', 'Classic denim jacket for all seasons.', 'https://via.placeholder.com/300x400?text=Denim+Jacket'),
-
--- Accessories & Others (10 items)
-('Pashmina Shawl', 'Accessories', 2500.00, 20, 'Hand Embroidered', 'Luxurious pashmina shawl with delicate embroidery.', 'https://via.placeholder.com/300x400?text=Shawl'),
-('Silk Dupatta', 'Accessories', 800.00, 40, 'None', 'Elegant silk dupatta to complement any outfit.', 'https://via.placeholder.com/300x400?text=Dupatta'),
-('Embroidered Stole', 'Accessories', 1200.00, 30, 'Machine Embroidered', 'Stylish embroidered stole for ethnic wear.', 'https://via.placeholder.com/300x400?text=Stole'),
-('Designer Belt', 'Accessories', 600.00, 50, 'None', 'Premium leather belt with designer buckle.', 'https://via.placeholder.com/300x400?text=Belt'),
-('Ethnic Jewelry Set', 'Accessories', 1500.00, 25, 'None', 'Beautiful ethnic jewelry set for traditional wear.', 'https://via.placeholder.com/300x400?text=Jewelry'),
-('Embroidered Handbag', 'Accessories', 1800.00, 18, 'Hand Embroidered', 'Handcrafted embroidered handbag.', 'https://via.placeholder.com/300x400?text=Handbag'),
-('Traditional Footwear', 'Footwear', 1200.00, 35, 'None', 'Comfortable traditional footwear for ethnic attire.', 'https://via.placeholder.com/300x400?text=Footwear'),
-('Silk Scarf', 'Accessories', 700.00, 45, 'None', 'Smooth silk scarf in vibrant colors.', 'https://via.placeholder.com/300x400?text=Scarf'),
-('Clutch Bag', 'Accessories', 1000.00, 28, 'Machine Embroidered', 'Elegant clutch bag for parties and events.', 'https://via.placeholder.com/300x400?text=Clutch'),
-('Embroidered Cap', 'Accessories', 500.00, 60, 'Machine Embroidered', 'Traditional embroidered cap for men.', 'https://via.placeholder.com/300x400?text=Cap');
+('Palazzo Set', 'Kurti', 1800.00, 30, 'None', 'Trendy kurti with palazzo pants combination.', 'https://adn-static1.nykaa.com/nykdesignstudio-images/pub/media/catalog/product/7/e/7e741abLP-AS71_1.jpg?tr=w-512'),
+('Cotton Kurti', 'Kurti', 900.00, 50, 'None', 'Comfortable cotton kurti for daily wear.', 'https://www.aarong.com/_next/image?url=https%3A%2F%2Fmcprod.aarong.com%2Fmedia%2Fcatalog%2Fproduct%2F1%2F1%2F1190000014549.jpg%3Foptimize%3Dhigh%26bg-color%3D255%2C255%2C255%26fit%3Dbounds%26height%3D%26width%3D&w=640&q=75'),
+('Sharara Set', 'Salwar Kameez', 4200.00, 14, 'Hand Embroidered', 'Traditional sharara set with rich embroidery.', 'https://narayanivastra.in/cdn/shop/files/NV_0295_1.jpg?v=1736109444&width=1946'),
+('Chino Pants', 'Pants', 1800.00, 40, 'None', 'Stylish chino pants for smart casual look.', 'https://fabrilife.com/products/657bef5d855de-square.jpg?v=20'),
+('Hoodie', 'Jacket', 2000.00, 35, 'None', 'Cozy hoodie for winter and casual outings.', 'https://bdmanja.com/wp-content/uploads/2020/11/20250925_1429_Gray-Hoodie-Design_remix_01k5zzr4z4ff190hdbksxt8pg7-300x300.jpg'),
+('Cargo Pants', 'Pants', 1900.00, 30, 'None', 'Functional cargo pants with multiple pockets.', 'https://fabrilife.com/products/66c1f1a62c62b-square.jpg?v=20'),
+('Track Pants', 'Pants', 1300.00, 55, 'None', 'Comfortable track pants for sports and leisure.', 'https://assets.adidas.com/images/w_600,f_auto,q_auto/c87749bc2db8494c94a4c14aa3718d38_faec/Adicolor_Baggy_Fit_Firebird_Track_Pants_Black_IZ4801_db21_model.tiff.jpg'),
+('Denim Jacket', 'Jacket', 2800.00, 25, 'None', 'Classic denim jacket for all seasons.', 'https://images.wrangler.com/is/image/Wrangler/RJK30AN-HERO?$KDP-XXLARGE$'),
+('Pashmina Shawl', 'Accessories', 2500.00, 20, 'Hand Embroidered', 'Luxurious pashmina shawl with delicate embroidery.', 'https://www.pashtush.com/cdn/shop/files/pashtush-pashmina-pashtush-women-faux-pashmina-shawl-ethnic-weave-design-black-30746399899702.jpg?v=1712866883&width=1080'),
+('Embroidered Stole', 'Accessories', 1200.00, 30, 'Machine Embroidered', 'Stylish embroidered stole for ethnic wear.', 'https://www.weaversvilla.com/cdn/shop/products/81EDtXpKnHL._UL1500.jpg?v=1600007348'),
+('Designer Belt', 'Accessories', 600.00, 50, 'None', 'Premium leather belt with designer buckle.', 'https://www.flannels.com/images/products/94521303_h_a1.jpg'),
+('Embroidered Handbag', 'Accessories', 1800.00, 18, 'Hand Embroidered', 'Handcrafted embroidered handbag.', 'https://www.fableengland.com/cdn/shop/files/6c7ab8fe-0260-47d6-9e16-35fcbcfe6a79.jpg?v=1751284278&width=1080'),
+('Silk Scarf', 'Accessories', 700.00, 45, 'None', 'Smooth silk scarf in vibrant colors.', 'https://img.drz.lazcdn.com/static/bd/p/3803893e549799c8eb2d5e6730193abc.jpg_720x720q80.jpg'),
+('Clutch Bag', 'Accessories', 1000.00, 28, 'Machine Embroidered', 'Elegant clutch bag for parties and events.', 'https://img.drz.lazcdn.com/static/bd/p/78abc22aaa3d62424055b154562d9552.jpg_200x200q80.avif'),
+('Embroidered Cap', 'Accessories', 500.00, 60, 'Machine Embroidered', 'Traditional embroidered cap for men.', 'https://www.custompatchhats.com/wp-content/uploads/2022/07/Direct-Embroidery-Mountain-outdoorsy-hats.jpg');
 
 -- Sample Reviews
 INSERT INTO Review (CustomerID, ProductID, Rating, Comment) VALUES
