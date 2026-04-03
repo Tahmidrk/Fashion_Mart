@@ -1,4 +1,4 @@
-# 🛍️ Fashion Mart Management System
+# 🛍️ Fashion Mart 
 
 A full-stack web application for managing a modern fashion retail store, built with Flask (Python) and MySQL.
 
